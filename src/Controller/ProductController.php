@@ -10,15 +10,32 @@ use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\HttpFoundation\RedirectResponse;
-use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\String\Slugger\SluggerInterface;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
 class ProductController extends AbstractController
 {
+
     /**
-     * @Route("/category/{category_slug}/{slug}", name="product_show")
+     * @Route("/category/{slug}", name="product_category")
+     */
+    public function category($slug, CategoryRepository $categoryRepository): Response
+    {
+
+        $category = $categoryRepository->findOneBy([
+            'slug' => $slug
+        ]);
+        if (!$category) {
+            throw $this->createNotFoundException("La catégorie demandée n'existe pas");
+        }
+        return $this->render('product/category.html.twig', [
+            'slug' => $slug,
+            'category' => $category
+        ]);
+    }
+
+    /**
+     * @Route("/category/{category_slug}/product/{slug}", name="product_show")
      */
     public function show($slug, ProductRepository $productRepository)
     {

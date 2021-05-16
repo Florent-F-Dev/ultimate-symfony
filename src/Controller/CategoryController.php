@@ -5,34 +5,14 @@ namespace App\Controller;
 use App\Entity\Category;
 use App\Form\CategoryType;
 use App\Repository\CategoryRepository;
-use ContainerGIOFUBA\getCategoryTypeService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\String\Slugger\SluggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
 class CategoryController extends AbstractController
 {
-    /**
-     * @Route("/{slug}", name="product_category")
-     */
-    public function category($slug, CategoryRepository $categoryRepository): Response
-    {
-
-        $category = $categoryRepository->findOneBy([
-            'slug' => $slug
-        ]);
-        if (!$category) {
-            throw $this->createNotFoundException("La catégorie demandée n'existe pas");
-        }
-        return $this->render('product/category.html.twig', [
-            'slug' => $slug,
-            'category' => $category
-        ]);
-    }
-
     /**
      * @Route("/admin/category/create", name="category_create")
      */
@@ -87,6 +67,19 @@ class CategoryController extends AbstractController
         return $this->render('category/edit.html.twig', [
             'category' => $category,
             'formView' => $formView
+        ]);
+    }
+
+    /**
+     * @Route("/admin/category/list", name="category_list")
+     */
+    public function list(CategoryRepository $categoryRepository)
+    {
+
+        $categories = $categoryRepository->findAll();
+
+        return $this->render('category/list.html.twig', [
+            'categories' => $categories
         ]);
     }
 }

@@ -12,6 +12,7 @@ use Symfony\Component\Form\CallbackTransformer;
 use Symfony\Component\Form\FormBuilderInterface;
 use App\Form\DataTransformer\CentimesTransformer;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
+use Symfony\Component\Validator\Constraints\NotBlank;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Form\Extension\Core\Type\UrlType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
@@ -27,7 +28,8 @@ class ProductType extends AbstractType
                 'label' => 'Nom du produit',
                 'attr' => [
                     'placeholder' => 'Tapez le nom du produit'
-                ]
+                ],
+                'required' => false
             ])
             ->add('shortDescription', TextareaType::class, [
                 'label' => 'Description courte',
@@ -40,7 +42,8 @@ class ProductType extends AbstractType
                 'attr' => [
                     'placeholder' => 'Tapez le prix du produit en euro'
                 ],
-                'divisor' => 100
+                'divisor' => 100,
+                'required' => false
             ])
             ->add('mainPicture', UrlType::class, [
                 'label' => 'Image du produit',

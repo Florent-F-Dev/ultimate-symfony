@@ -5,24 +5,27 @@ namespace App\Controller;
 use App\Entity\Category;
 use App\Form\CategoryType;
 use App\Repository\CategoryRepository;
+use App\Repository\ProductRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\Security\Core\Security;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\String\Slugger\SluggerInterface;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class CategoryController extends AbstractController
 {
 
     protected $categoryRepository;
+    protected $request;
+    protected $slugger;
+    protected $em;
 
-    public function __construct(CategoryRepository $categoryRepository)
+    public function __construct(CategoryRepository $categoryRepository, SluggerInterface $slugger, EntityManagerInterface $em)
     {
         $this->categoryRepository = $categoryRepository;
+        $this->slugger = $slugger;
+        $this->em = $em;
     }
 
     public function renderMenuList()
@@ -37,7 +40,7 @@ class CategoryController extends AbstractController
     /**
      * @Route("/admin/category/create", name="category_create")
      */
-    public function create(Request $request, SluggerInterface $slugger, EntityManagerInterface $em)
+    public function create(Request $request)
     {
 
         $category = new Category();
@@ -48,11 +51,10 @@ class CategoryController extends AbstractController
 
         if ($form->isSubmitted() && $form->isValid()) {
 
-            $category->setSlug(strtolower($slugger->slug($category->getName())));
+            $category->setSlug(strtolower($this->slugger->slug($category->getName())));
 
-
-            $em->persist($category);
-            $em->flush();
+            $this->em->persist($category);
+            $this->em->flush();
 
             return $this->redirectToRoute('homepage');
         }
@@ -67,10 +69,10 @@ class CategoryController extends AbstractController
     /**
      * @Route("/admin/category/{id}/edit", name="category_edit")
      */
-    public function edit($id, CategoryRepository $categoryRepository, Request $request, EntityManagerInterface $em, SluggerInterface $slugger)
+    public function edit($id, Request $request)
     {
 
-        $category = $categoryRepository->find($id);
+        $category = $this->categoryRepository->find($id);
 
         if (!$category) {
             throw new NotFoundHttpException("Cette catégory n'existe pas");
@@ -81,9 +83,9 @@ class CategoryController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $category->setSlug(strtolower($slugger->slug($category->getName())));
+            $category->setSlug(strtolower($this->slugger->slug($category->getName())));
 
-            $em->flush();
+            $this->em->flush();
 
             return $this->redirectToRoute('homepage');
         }
@@ -99,13 +101,38 @@ class CategoryController extends AbstractController
     /**
      * @Route("/admin/category/list", name="category_list")
      */
-    public function list(CategoryRepository $categoryRepository)
+    public function list()
     {
 
-        $categories = $categoryRepository->findAll();
+        $categories = $this->categoryRepository->findAll();
 
         return $this->render('category/list.html.twig', [
             'categories' => $categories
         ]);
+    }
+
+    /**
+     * @Route("/admin/category/list/remove/{id}", name="category_remove", requirements={"id":"\d+"})
+     */
+    public function remove($id, ProductRepository $productRepository)
+    {
+        $category = $this->categoryRepository->find($id);
+
+        if (!$category) {
+            throw new NotFoundHttpException("Cette catégory n'existe pas");
+        }
+
+        $products = $productRepository->findBy(['category' => $id]);
+
+        if (count($products) > 0) {
+            foreach ($products as $product) {
+                $this->em->remove($product);
+            }
+        }
+
+        $this->em->remove($category);
+        $this->em->flush();
+
+        return $this->redirectToRoute('category_list');
     }
 }

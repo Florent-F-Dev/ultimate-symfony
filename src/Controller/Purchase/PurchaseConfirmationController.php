@@ -3,7 +3,6 @@
 namespace App\Controller\Purchase;
 
 use DateTime;
-use DateTimeZone;
 use App\Entity\Purchase;
 use App\Cart\CartService;
 use App\Entity\PurchaseItem;

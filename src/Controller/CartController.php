@@ -67,7 +67,7 @@ class CartController extends AbstractController
     }
 
     /**
-     * @Route("/cart/delete/{id}", name="cart_delete", requirements={"is": "\d+"})
+     * @Route("/cart/delete/{id}", name="cart_delete", requirements={"id": "\d+"})
      */
     public function delete($id)
     {

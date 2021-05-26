@@ -28,7 +28,9 @@
 				{{ product.category.name }}
 			</span>
 			<p>{{ product.shortDescription }}</p>
-			<a href="{{ path('product_edit', {'id': product.id}) }}" class="btn btn-warning btn-sm">Modifier</a>
+			{% if app.user %}
+				<a href="{{ path('product_edit', {'id': product.id}) }}" class="btn btn-warning btn-sm">Modifier</a>
+			{% endif %}
 			<a href="{{ path('cart_add', {'id': product.id}) }}" class="btn btn-success btn-lg">
 				<i class="fas fa-shopping-cart"></i>
 				Ajouter au panier
